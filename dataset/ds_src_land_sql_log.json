@@ -6,7 +6,7 @@
 			"type": "LinkedServiceReference"
 		},
 		"folder": {
-			"name": "land/src"
+			"name": "WWF/land/src"
 		},
 		"annotations": [],
 		"type": "AzureSqlTable",

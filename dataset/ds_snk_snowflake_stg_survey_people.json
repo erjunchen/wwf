@@ -6,7 +6,7 @@
 			"type": "LinkedServiceReference"
 		},
 		"folder": {
-			"name": "land/snk"
+			"name": "WWF/land/snk"
 		},
 		"annotations": [],
 		"type": "SnowflakeTable",

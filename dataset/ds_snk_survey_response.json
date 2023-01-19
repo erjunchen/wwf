@@ -5,6 +5,9 @@
 			"referenceName": "ls_AzureBlobStorage",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "WWF"
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
