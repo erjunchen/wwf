@@ -1,0 +1,146 @@
+{
+	"name": "pipeline1",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup1",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT \n        [pl_log_id]\n      , [pl_category]\n      , [pl_status]\n      , [pl_Createdtimestamp] as [last_timestamp]\n      , [pl_Createdtimestamp] + 1     as [nextStart_timestamp]\n      , [pl_Createdtimestamp] + 86400 as [tomorrow_timestamp]\n      , convert(varchar(10),  [pl_create_date], 112) as lastdate_short\n      , convert(varchar(10),  [pl_create_date], 23) as lastdate\n      , convert(varchar(10), dateadd(day, 1, [pl_create_date]), 23) as nextdate\n  FROM [land].[pipeline_activity_log]\n  where [pl_category] = 'survey' and [pl_status]  = 1 and pl_load_type = 'delta'\n  order by [pl_log_id] desc \n",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_src_land_sql_log",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Lookup1_copy1",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT \n        [pl_log_id]\n      , [pl_category]\n      , [pl_status]\n      , [pl_Createdtimestamp] as [last_timestamp]\n      , [pl_Createdtimestamp] + 1     as [nextStart_timestamp]\n      , [pl_Createdtimestamp] + 86400 as [tomorrow_timestamp]\n      , convert(varchar(10),  [pl_create_date], 112) as lastdate_short\n      , convert(varchar(10),  [pl_create_date], 23) as lastdate\n      , convert(varchar(10), dateadd(day, 1, [pl_create_date]), 23) as nextdate\n  FROM [land].[pipeline_activity_log]\n  where 1=2\n  order by [pl_log_id] desc \n",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_src_land_sql_log",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Execute delta load survey",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_delighted_delta_survey",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"par_snk_container": {
+							"value": "@pipeline().parameters.par_m_snk_container",
+							"type": "Expression"
+						},
+						"par_snk_dir": {
+							"value": "@pipeline().parameters.par_m_snk_dir",
+							"type": "Expression"
+						},
+						"par_snk_filename": {
+							"value": "@pipeline().parameters.par_m_snk_filename",
+							"type": "Expression"
+						},
+						"par_src_endpoint": {
+							"value": "@concat(pipeline().parameters.par_m_init_endpoint\r\n,'/survey_responses.json/'\r\n)",
+							"type": "Expression"
+						},
+						"receiver": {
+							"value": "@pipeline().parameters.par_m_receiver",
+							"type": "Expression"
+						},
+						"cc": {
+							"value": "@pipeline().parameters.par_m_cc",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Execute_delta_people",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_delighted_delta_People",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "survey_timestamp now",
+				"description": "by default, it is current timestamp as a until datetime",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "whatever ",
+					"value": {
+						"value": "@{div(sub(ticks(utcNow()), ticks('1970-01-01')),10000000)}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "people_timestamp now",
+				"description": "by default, it is current timestamp as a until datetime",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "var_m_until_delta_people_timestamp",
+					"value": {
+						"value": "@{div(sub(ticks(utcNow()), ticks('1970-01-01')),10000000)}",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"whatever ": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "land/test"
+		},
+		"annotations": []
+	}
+}

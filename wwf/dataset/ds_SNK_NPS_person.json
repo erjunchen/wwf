@@ -1,0 +1,28 @@
+{
+	"name": "ds_SNK_NPS_person",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_Blob_SAS_SNFLK",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "land/snk"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "NPS_Person.csv",
+				"folderPath": "delighted/raw",
+				"container": "land"
+			},
+			"columnDelimiter": "|",
+			"rowDelimiter": "\n",
+			"escapeChar": "\\",
+			"firstRowAsHeader": false,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}

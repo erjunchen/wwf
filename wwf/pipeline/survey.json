@@ -1,0 +1,191 @@
+{
+	"name": "survey",
+	"properties": {
+		"activities": [
+			{
+				"name": "survey",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "If Condition1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat('https://api.delighted.com/v1/survey_responses.json?'\n, 'per_page=',pipeline().parameters.per_page\n, '&since=',pipeline().parameters.since\n)",
+						"type": "Expression"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "Basic",
+						"username": "j9HsbUD0W8zhN14uoKv2HfIO7JIlxXzJ",
+						"password": {
+							"type": "AzureKeyVaultSecret",
+							"store": {
+								"referenceName": "ls_fusedata_AzureKeyVault",
+								"type": "LinkedServiceReference"
+							},
+							"secretName": "Delighted"
+						}
+					}
+				}
+			},
+			{
+				"name": "Saving API-Key",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "API_Key",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "var_delta_API-Key",
+					"value": {
+						"value": "@activity('API_Key').output.value",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "API_Key",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "survey",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://kv-wildfork-nonprod.vault.azure.net/secrets/delighted-apikey/177d9c82363448c7a5b3a7da1714a128?api-version=7.0",
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "people",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat('https://api.delighted.com/v1/people.json?'\n, 'since=','123'\n)",
+						"type": "Expression"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "Basic",
+						"username": "j9HsbUD0W8zhN14uoKv2HfIO7JIlxXzJ",
+						"password": {
+							"type": "AzureKeyVaultSecret",
+							"store": {
+								"referenceName": "ls_fusedata_AzureKeyVault",
+								"type": "LinkedServiceReference"
+							},
+							"secretName": "Delighted"
+						}
+					}
+				}
+			},
+			{
+				"name": "If Condition1",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "people",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@contains(\r\nactivity('people').output.ADFWebActivityResponseHeaders\r\n, 'Link')",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "Set variable1",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "aa",
+								"value": {
+									"value": "no",
+									"type": "Expression"
+								}
+							}
+						}
+					],
+					"ifTrueActivities": [
+						{
+							"name": "Set variable2",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "aa",
+								"value": "HAS"
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"per_page": {
+				"type": "string",
+				"defaultValue": "20"
+			},
+			"since": {
+				"type": "string",
+				"defaultValue": "1673792804"
+			}
+		},
+		"variables": {
+			"aa": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "land/test"
+		},
+		"annotations": []
+	}
+}

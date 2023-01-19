@@ -1,0 +1,94 @@
+{
+	"name": "df_flatten_NPS_Survey_respons",
+	"properties": {
+		"folder": {
+			"name": "delighted"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_dummy_json",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_snk_survey_response",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "flatten1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          additional_answers as (id as integer, question as (id as string, text as string, type as string), value as (email as string, free_response as string, name as string, scale as short, select_many as string, select_one as string))[],",
+				"          comment as string,",
+				"          created_at as integer,",
+				"          id as integer,",
+				"          notes as string[],",
+				"          permalink as string,",
+				"          person as integer,",
+				"          person_properties as ({Delighted Browser} as string, {Delighted Device Type} as string, {Delighted Link Name} as string, {Delighted Operating System} as string, {Delighted Source} as string, Ordernumber as long, {_kx} as string, utm_medium as string, utm_source as string),",
+				"          score as short,",
+				"          survey_type as string,",
+				"          tags as string[],",
+				"          updated_at as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     documentForm: 'documentPerLine') ~> source1",
+				"source1 foldDown(unroll(additional_answers),",
+				"     mapColumn(",
+				"          id,",
+				"          person,",
+				"          survey_type,",
+				"          score,",
+				"          comment,",
+				"          permalink,",
+				"          created_at,",
+				"          updated_at,",
+				"          person_properties_Ordernumber = person_properties.Ordernumber,",
+				"          {person_properties.utm_source} = person_properties.utm_source,",
+				"          person_properties_utm_medium = person_properties.utm_medium,",
+				"          person_properties_kx = person_properties.{_kx},",
+				"          person_properties_Delighted_Source = person_properties.{Delighted Source},",
+				"          person_properties_Delighted_Link_Name = person_properties.{Delighted Link Name},",
+				"          person_properties_Delighted_Device_Type = person_properties.{Delighted Device Type},",
+				"          person_properties_Delighted_Operating_System = person_properties.{Delighted Operating System},",
+				"          person_properties_Delighted_Browser = person_properties.{Delighted Browser},",
+				"          notes,",
+				"          tags,",
+				"          additional_answers_id = additional_answers.id,",
+				"          additional_answers_value_email = additional_answers.value.email,",
+				"          {additional_answers.value_free_response} = additional_answers.value.free_response,",
+				"          {additional_answers.value_name} = additional_answers.value.name,",
+				"          {additional_answers.value_scale} = additional_answers.value.scale,",
+				"          {additional_answers.value_select_one} = additional_answers.value.select_one,",
+				"          {additional_answers.value_select_many} = additional_answers.value.select_many,",
+				"          {additional_answers.question_id} = additional_answers.question.id,",
+				"          {additional_answers.question_type} = additional_answers.question.type,",
+				"          {additional_answers.question.text} = additional_answers.question.text",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> flatten1",
+				"flatten1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['NPS_Survey_Response.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1"
+			]
+		}
+	}
+}
