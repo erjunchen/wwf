@@ -64,10 +64,6 @@
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
-					"dataset": {
-						"referenceName": "ds_src_land_pipeline_log",
-						"type": "DatasetReference"
-					},
 					"firstRowOnly": true
 				}
 			},
@@ -132,30 +128,6 @@
 					},
 					"enableStaging": false
 				},
-				"inputs": [
-					{
-						"referenceName": "ds_src_land_delighted",
-						"type": "DatasetReference",
-						"parameters": {
-							"par_src_page": {
-								"value": "@pipeline().parameters.par_src_page",
-								"type": "Expression"
-							},
-							"par_ds_src_since": {
-								"value": "@variables('var_start_delta')",
-								"type": "Expression"
-							},
-							"par_ds_src_until": {
-								"value": "@variables('var_until_delta')",
-								"type": "Expression"
-							},
-							"par_ds_src_ednpoint": {
-								"value": "@pipeline().parameters.par_src_endpoint",
-								"type": "Expression"
-							}
-						}
-					}
-				],
 				"outputs": [
 					{
 						"referenceName": "ds_snk_land_delighted_json",
@@ -355,7 +327,7 @@
 			}
 		},
 		"folder": {
-			"name": "land/bak"
+			"name": "WWF/land/bak"
 		},
 		"annotations": []
 	}

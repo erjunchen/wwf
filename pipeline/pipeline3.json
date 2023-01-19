@@ -38,17 +38,11 @@
 						"referenceName": "ds_src_land_sql_log",
 						"type": "DatasetReference"
 					}
-				],
-				"outputs": [
-					{
-						"referenceName": "Json1",
-						"type": "DatasetReference"
-					}
 				]
 			}
 		],
 		"folder": {
-			"name": "land/test"
+			"name": "WWF/land/test"
 		},
 		"annotations": []
 	}
