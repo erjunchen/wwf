@@ -1,0 +1,286 @@
+{
+	"name": "pl_AZ_land_to_SNFLK_STG",
+	"properties": {
+		"description": "moving data from Land on Azure to Staging on Snowflake ",
+		"activities": [
+			{
+				"name": "copy_NPS_Person_Response_SNFLK",
+				"description": "copy Delighted survey person response from to snowflakes staging",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "NPS_Surver_person",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SnowflakeSink",
+						"preCopyScript": "truncate table if exists  WILDFORK.STAGING.NPS_PERSON_RESPONSE;",
+						"importSettings": {
+							"type": "SnowflakeImportCopyCommand"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"type": "Int64",
+									"ordinal": 1
+								},
+								"sink": {
+									"name": "PERSON_RESPONSE_ID",
+									"type": "Int64"
+								}
+							},
+							{
+								"source": {
+									"type": "String",
+									"ordinal": 2
+								},
+								"sink": {
+									"name": "PERSON_RESPONSE_NAME",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"type": "String",
+									"ordinal": 3
+								},
+								"sink": {
+									"name": "PERSON_RESPONSE_EMAIL",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"type": "Int64",
+									"ordinal": 4
+								},
+								"sink": {
+									"name": "PERSON_RESPONSE_CREATED_AT",
+									"type": "Int64"
+								}
+							},
+							{
+								"source": {
+									"type": "Int64",
+									"ordinal": 5
+								},
+								"sink": {
+									"name": "PERSON_RESPONSE_LAST_SENT_AT",
+									"type": "Int64"
+								}
+							},
+							{
+								"source": {
+									"type": "Int64",
+									"ordinal": 6
+								},
+								"sink": {
+									"name": "PERSON_RESPONSE_LAST_RESPONDED_AT",
+									"type": "Int64"
+								}
+							},
+							{
+								"source": {
+									"type": "Int64",
+									"ordinal": 7
+								},
+								"sink": {
+									"name": "PERSON_RESPONSE_NEXT_SURVEY_SCHEDULED_AT",
+									"type": "Int64"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_SNK_NPS_person",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_snk_snowflake_stg_survey_people",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "NPS_Surver_person",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobStorageWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "AzureBlobStorage_sas",
+							"type": "LinkedServiceReference"
+						},
+						"path": "land/delighted/raw"
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "survey_prople_id",
+									"type": "Int64",
+									"physicalType": "bigint"
+								},
+								"sink": {
+									"type": "String",
+									"physicalType": "String",
+									"ordinal": 1
+								}
+							},
+							{
+								"source": {
+									"name": "survey_prople_name",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"type": "String",
+									"physicalType": "String",
+									"ordinal": 2
+								}
+							},
+							{
+								"source": {
+									"name": "survey_prople_email",
+									"type": "String",
+									"physicalType": "nvarchar"
+								},
+								"sink": {
+									"type": "String",
+									"physicalType": "String",
+									"ordinal": 3
+								}
+							},
+							{
+								"source": {
+									"name": "survey_prople_created_at",
+									"type": "Int64",
+									"physicalType": "bigint"
+								},
+								"sink": {
+									"type": "String",
+									"physicalType": "String",
+									"ordinal": 4
+								}
+							},
+							{
+								"source": {
+									"name": "survey_prople_last_sent_at",
+									"type": "Int64",
+									"physicalType": "bigint"
+								},
+								"sink": {
+									"type": "String",
+									"physicalType": "String",
+									"ordinal": 5
+								}
+							},
+							{
+								"source": {
+									"name": "survey_prople_last_responded_at",
+									"type": "Int64",
+									"physicalType": "bigint"
+								},
+								"sink": {
+									"type": "String",
+									"physicalType": "String",
+									"ordinal": 6
+								}
+							},
+							{
+								"source": {
+									"name": "survey_prople_next_survey_scheduled_at",
+									"type": "Int64",
+									"physicalType": "bigint"
+								},
+								"sink": {
+									"type": "String",
+									"physicalType": "String",
+									"ordinal": 7
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_src_land_sql_people",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_SNK_NPS_person",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "land"
+		},
+		"annotations": []
+	}
+}

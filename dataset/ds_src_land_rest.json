@@ -1,0 +1,39 @@
+{
+	"name": "ds_src_land_rest",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_delighted_api",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"ednpoint": {
+					"value": "@dataset().par_ds_src_ednpoint",
+					"type": "Expression"
+				},
+				"APIkey": {
+					"value": "@dataset().par_ds_src_apikey",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"par_ds_delta_since": {
+				"type": "string"
+			},
+			"par_ds_delta_until": {
+				"type": "string"
+			},
+			"par_ds_src_ednpoint": {
+				"type": "string"
+			},
+			"par_ds_src_apikey": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "land/src"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"schema": []
+	}
+}

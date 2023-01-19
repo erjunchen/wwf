@@ -1,0 +1,30 @@
+{
+	"name": "ls_delighted_api",
+	"properties": {
+		"description": "get survey responses from delighted",
+		"parameters": {
+			"ednpoint": {
+				"type": "string"
+			},
+			"APIkey": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "@{linkedService().ednpoint}",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Basic",
+			"userName": "@{linkedService().APIkey}",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "ls_fusedata_AzureKeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "Delighted"
+			}
+		}
+	}
+}

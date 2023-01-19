@@ -1,0 +1,59 @@
+{
+	"name": "df_log_last_success_load_delighted",
+	"properties": {
+		"folder": {
+			"name": "delighted/src"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_src_land_last_success_load_delighted",
+						"type": "DatasetReference"
+					},
+					"name": "src"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_snk_land_log_success_load_delighted",
+						"type": "DatasetReference"
+					},
+					"name": "logSuccessLloadDelighted",
+					"rejectedDataLinkedService": {
+						"referenceName": "ls_AzureBlobStorage",
+						"type": "LinkedServiceReference"
+					}
+				}
+			],
+			"transformations": [
+				{
+					"name": "generateLastSuccessLoadDate"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     df_par_last_success_load_delighted_date as string (toString(\r",
+				"    currentDate('EST')\r",
+				")\r",
+				")",
+				"}",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> src",
+				"src derive(lastdate = $df_par_last_success_load_delighted_date) ~> generateLastSuccessLoadDate",
+				"generateLastSuccessLoadDate sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          Column_1 as string",
+				"     ),",
+				"     partitionFileNames:['last_load_delighted_date.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> logSuccessLloadDelighted"
+			]
+		}
+	}
+}
