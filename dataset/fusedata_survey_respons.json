@@ -2,11 +2,8 @@
 	"name": "fusedata_survey_respons",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "AzureBlobStorage_sas",
+			"referenceName": "AzureBlobStorage_SAS",
 			"type": "LinkedServiceReference"
-		},
-		"folder": {
-			"name": "WWF"
 		},
 		"annotations": [],
 		"type": "DelimitedText",

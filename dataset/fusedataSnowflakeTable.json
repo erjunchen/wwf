@@ -5,9 +5,6 @@
 			"referenceName": "fusedata_SNOWFLAKE",
 			"type": "LinkedServiceReference"
 		},
-		"folder": {
-			"name": "WWF"
-		},
 		"annotations": [],
 		"type": "SnowflakeTable",
 		"schema": [
