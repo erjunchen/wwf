@@ -2,7 +2,7 @@
 	"name": "df_flatten_NPS_Survey_respons",
 	"properties": {
 		"folder": {
-			"name": "delighted"
+			"name": "WWF/delighted"
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {

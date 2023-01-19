@@ -2,7 +2,7 @@
 	"name": "df_log_last_success_load_delighted",
 	"properties": {
 		"folder": {
-			"name": "delighted/src"
+			"name": "WWF/delighted/src"
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
@@ -35,10 +35,7 @@
 			],
 			"scriptLines": [
 				"parameters{",
-				"     df_par_last_success_load_delighted_date as string (toString(\r",
-				"    currentDate('EST')\r",
-				")\r",
-				")",
+				"     df_par_last_success_load_delighted_date as string (toString(currentDate('EST')))",
 				"}",
 				"source(allowSchemaDrift: true,",
 				"     validateSchema: false,",
