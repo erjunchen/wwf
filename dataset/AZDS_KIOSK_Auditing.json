@@ -1,0 +1,33 @@
+{
+	"name": "AZDS_KIOSK_Auditing",
+	"properties": {
+		"parameters": {
+			"KIOSK_Container": {
+				"type": "string"
+			},
+			"KIOSK_endpoint": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "kios/Extended_Reporting/Sink"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "KIOSK_Auditing.csv",
+				"container": {
+					"value": "@dataset().KIOSK_Container",
+					"type": "Expression"
+				}
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}

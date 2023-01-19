@@ -1,5 +1,5 @@
 {
-	"name": "DF_KIOSK_auditing",
+	"name": "AZDS_SRC_GFSAP",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "AzureBlobStorage",

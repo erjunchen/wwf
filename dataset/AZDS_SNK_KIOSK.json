@@ -1,0 +1,43 @@
+{
+	"name": "AZDS_SNK_KIOSK",
+	"properties": {
+		"description": "app0094sqldev;   \nRoot directory : global-audit\nNO GZIP",
+		"parameters": {
+			"container": {
+				"type": "string"
+			},
+			"tar_file": {
+				"type": "string"
+			},
+			"storageAccountName": {
+				"type": "string"
+			},
+			"endpoint": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "kios/Extended_Reporting/Sink"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": {
+					"value": "@dataset().tar_file",
+					"type": "Expression"
+				},
+				"container": {
+					"value": "@dataset().container",
+					"type": "Expression"
+				}
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
