@@ -1,0 +1,474 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name"
+		},
+		"ls_fusedata_AzureKeyVault": {
+			"type": "string"
+		},
+		"ls_azure_sqldb": {
+			"type": "string"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_delighted_delta_People')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "initial_endpoint",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "var_endpoint",
+							"value": {
+								"value": "@pipeline().parameters.par_init_endpoint",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "loop_list_people_period",
+						"type": "Until",
+						"dependsOn": [
+							{
+								"activity": "initial_endpoint",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(variables('var_endpoint'), 'stop')\n",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "list_people",
+									"type": "WebActivity",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"url": {
+											"value": "@concat(variables('var_endpoint'),'?'\n, 'since=', pipeline().parameters.par_c1_start_delta_people_timestamp\n)",
+											"type": "Expression"
+										},
+										"method": "GET",
+										"authentication": {
+											"type": "Basic",
+											"username": {
+												"value": "@pipeline().parameters.par_p_API_Key",
+												"type": "Expression"
+											},
+											"password": {
+												"type": "AzureKeyVaultSecret",
+												"store": {
+													"referenceName": "[parameters('ls_fusedata_AzureKeyVault')]",
+													"type": "LinkedServiceReference"
+												},
+												"secretName": "Delighted"
+											}
+										}
+									}
+								},
+								{
+									"name": "reset_endpoint",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "list_people",
+											"dependencyConditions": [
+												"Failed"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "var_endpoint",
+										"value": "stop"
+									}
+								},
+								{
+									"name": "If Condition1",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "list_people",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@contains(activity('list_people').output.ADFWebActivityResponseHeaders\r\n,'Link'\r\n)",
+											"type": "Expression"
+										},
+										"ifFalseActivities": [
+											{
+												"name": "reset_endpoint_to_stop_loop",
+												"type": "SetVariable",
+												"dependsOn": [],
+												"userProperties": [],
+												"typeProperties": {
+													"variableName": "var_endpoint",
+													"value": "stop"
+												}
+											}
+										],
+										"ifTrueActivities": [
+											{
+												"name": "get_response_header",
+												"type": "SetVariable",
+												"dependsOn": [],
+												"userProperties": [],
+												"typeProperties": {
+													"variableName": "response_header",
+													"value": {
+														"value": "@activity('list_people').output.ADFWebActivityResponseHeaders.Link",
+														"type": "Expression"
+													}
+												}
+											},
+											{
+												"name": "update_endpoint",
+												"type": "SetVariable",
+												"dependsOn": [
+													{
+														"activity": "get_response_header",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"userProperties": [],
+												"typeProperties": {
+													"variableName": "var_endpoint",
+													"value": {
+														"value": "@substring(variables('response_header'),1\n,sub(length(variables('response_header')),14)\n)\n ",
+														"type": "Expression"
+													}
+												}
+											}
+										]
+									}
+								},
+								{
+									"name": "is_respone_empty",
+									"description": "check to see if response empty",
+									"type": "IfCondition",
+									"dependsOn": [
+										{
+											"activity": "list_people",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@equals(activity('list_people').output.Response\n,'[]'\n)\n",
+											"type": "Expression"
+										},
+										"ifFalseActivities": [
+											{
+												"name": "Stored_response_to_tb",
+												"type": "SqlServerStoredProcedure",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"storedProcedureName": "[[dbo].[udsp_insert_peopletemp]",
+													"storedProcedureParameters": {
+														"r": {
+															"value": {
+																"value": "@replace(\n   activity('list_people').output.Response\n    ,'\\\"','')",
+																"type": "Expression"
+															},
+															"type": "String"
+														}
+													}
+												},
+												"linkedServiceName": {
+													"referenceName": "[parameters('ls_azure_sqldb')]",
+													"type": "LinkedServiceReference"
+												}
+											}
+										],
+										"ifTrueActivities": [
+											{
+												"name": "reset_endpoint_copy1",
+												"type": "SetVariable",
+												"dependsOn": [],
+												"userProperties": [],
+												"typeProperties": {
+													"variableName": "var_endpoint",
+													"value": "stop"
+												}
+											}
+										]
+									}
+								}
+							],
+							"timeout": "0.12:00:00"
+						}
+					},
+					{
+						"name": "log_delta_people_success",
+						"description": "log_delta_people_success",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "loop_list_people_period",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[land].[udsp_logpipeline]",
+							"storedProcedureParameters": {
+								"adf_name": {
+									"value": {
+										"value": "@pipeline().DataFactory",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"pl_category": {
+									"value": "people",
+									"type": "String"
+								},
+								"pl_load_start_date": {
+									"value": {
+										"value": "@pipeline().parameters.par_c1_start_delta_people_datetime",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"pl_load_type": {
+									"value": "delta",
+									"type": "String"
+								},
+								"pl_load_until_date": {
+									"value": {
+										"value": "@utcNow()",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"pl_name": {
+									"value": {
+										"value": "@pipeline().Pipeline",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"pl_status": {
+									"value": "1",
+									"type": "Int32"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "[parameters('ls_azure_sqldb')]",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "log_delta_people_failed",
+						"description": "log_delta_people_failed",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "loop_list_people_period",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[land].[udsp_logpipeline]",
+							"storedProcedureParameters": {
+								"adf_name": {
+									"value": {
+										"value": "@pipeline().DataFactory",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"pl_category": {
+									"value": "people",
+									"type": "String"
+								},
+								"pl_load_start_date": {
+									"value": {
+										"value": "@pipeline().parameters.par_c1_start_delta_people_datetime",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"pl_load_type": {
+									"value": "delta",
+									"type": "String"
+								},
+								"pl_load_until_date": {
+									"value": {
+										"value": "@utcNow()",
+										"type": "Expression"
+									},
+									"type": "DateTime"
+								},
+								"pl_name": {
+									"value": {
+										"value": "@pipeline().Pipeline",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"pl_status": {
+									"value": "0",
+									"type": "Int32"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "[parameters('ls_azure_sqldb')]",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "delta survey Faiure notice",
+						"description": "successful lod survey notification",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "log_delta_people_failed",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://prod-00.canadacentral.logic.azure.com:443/workflows/e08a5efe1c714c62950f71fff3290381/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=7KWIblzVG-FWqD00-WOS3-3GIswFQcOVeTu6Jiqmf8A ",
+							"method": "POST",
+							"body": {
+								"value": "{\n    \"dataFactoryName\" : \"@{pipeline().DataFactory}\", \n    \"message\" : \"The delta dumping people from delighted failed at @{convertFromUtc(utcNow(),'eastern standard time')}\",\n    \"pipelineName\" : \"@{pipeline().Pipeline}\", \n    \"receiver\" : \"@{pipeline().parameters.receiver}\" ,\n    \"cc\":\"@{pipeline().parameters.cc}\",\n    \"subject\" : \"No-Reply: The survey Data delta dumping failed.\"\n   }",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"parameters": {
+					"par_init_endpoint": {
+						"type": "string",
+						"defaultValue": "https://api.delighted.com/v1/people.json"
+					},
+					"receiver": {
+						"type": "string",
+						"defaultValue": "chenerjun@live.com"
+					},
+					"cc": {
+						"type": "string",
+						"defaultValue": "erjun.chen@teamfuse.ca,echen@jbssa.com"
+					},
+					"par_c1_start_delta_people_timestamp": {
+						"type": "string",
+						"defaultValue": "1672549200"
+					},
+					"par_c1_start_delta_people_datetime": {
+						"type": "string",
+						"defaultValue": "2023-01-01"
+					},
+					"par_p_API_Key": {
+						"type": "string",
+						"defaultValue": "j9HsbUD0W8zhN14uoKv2HfIO7JIlxXzJ"
+					}
+				},
+				"variables": {
+					"response_body": {
+						"type": "String"
+					},
+					"response_header": {
+						"type": "String"
+					},
+					"var_endpoint": {
+						"type": "String"
+					},
+					"var_start_timestamp_delta_people": {
+						"type": "String"
+					},
+					"var_until_timestamp_delta_people": {
+						"type": "String"
+					},
+					"var_delta_API-Key": {
+						"type": "String"
+					},
+					"var_delta_people_API_pagination": {
+						"type": "String",
+						"defaultValue": "1"
+					},
+					"var_bridge_people": {
+						"type": "String",
+						"defaultValue": "0"
+					}
+				},
+				"folder": {
+					"name": "WWF/land"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		}
+	]
+}
