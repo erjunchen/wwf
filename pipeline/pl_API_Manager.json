@@ -72,6 +72,10 @@
 							"description": "load delighted survey data from this date at 12:00 AM",
 							"type": "SetVariable",
 							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
 							"userProperties": [],
 							"typeProperties": {
 								"variableName": "var_m_start_delta_people_timestamp",
@@ -93,6 +97,10 @@
 									]
 								}
 							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
 							"userProperties": [],
 							"typeProperties": {
 								"variableName": "var_m_period_until_people_timestamp",
@@ -160,6 +168,10 @@
 									]
 								}
 							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
 							"userProperties": [],
 							"typeProperties": {
 								"variableName": "var_m_until_delta_people_timestamp",
@@ -302,6 +314,10 @@
 									]
 								}
 							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
 							"userProperties": [],
 							"typeProperties": {
 								"variableName": "var_m_start_delta_survey_timestamp",
@@ -350,6 +366,10 @@
 									]
 								}
 							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
 							"userProperties": [],
 							"typeProperties": {
 								"variableName": "var_m_start_delta_people_timestamp",
@@ -417,6 +437,10 @@
 									]
 								}
 							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
 							"userProperties": [],
 							"typeProperties": {
 								"variableName": "var_m_start_delta_survey_datetime",
@@ -438,6 +462,10 @@
 									]
 								}
 							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
 							"userProperties": [],
 							"typeProperties": {
 								"variableName": "var_m_start_delta_people_datetime",
@@ -614,6 +642,10 @@
 						]
 					}
 				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "var_m_API-Key",
@@ -710,11 +742,11 @@
 			},
 			"par_m_start_date": {
 				"type": "string",
-				"defaultValue": "2023-01-01"
+				"defaultValue": "2020-01-01"
 			},
 			"par_m_until_date": {
 				"type": "string",
-				"defaultValue": "2023-01-07"
+				"defaultValue": "2022-01-07"
 			},
 			"par_m_receiver": {
 				"type": "string",
