@@ -1,0 +1,24 @@
+{
+	"name": "out_dep",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Mainri_asa_file_system_BlobStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "out_dep.csv",
+				"folderPath": "out",
+				"container": "mainri-asa-file-system"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
