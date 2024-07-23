@@ -10,7 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
-				"fileName": "out_dep.csv",
+				"fileName": "out_dep2.csv",
 				"folderPath": "out",
 				"container": "mainri-asa-file-system"
 			},
